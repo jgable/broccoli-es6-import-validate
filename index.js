@@ -5,7 +5,8 @@ var _ = require('lodash'),
     path = require('path'),
     chalk = require('chalk'),
     Filter = require('broccoli-filter'),
-    BroccoliES6ModuleFile = require('./lib/BroccoliES6ModuleFile');
+    BroccoliES6ModuleFile = require('./lib/BroccoliES6ModuleFile'),
+    helpers = require('broccoli-kitchen-sink-helpers');
 
 function ES6ValidateFilter(inputTree, options) {
     if (!(this instanceof ES6ValidateFilter)) {
@@ -21,6 +22,7 @@ function ES6ValidateFilter(inputTree, options) {
 
 // Inherit from Filter
 ES6ValidateFilter.prototype = Object.create(Filter.prototype);
+ES6ValidateFilter.prototype.constructor = ES6ValidateFilter;
 
 // Extend the inherited methods
 _.extend(ES6ValidateFilter.prototype, {
@@ -28,11 +30,11 @@ _.extend(ES6ValidateFilter.prototype, {
     extensions: ['js'],
     targetExtension: 'js',
 
-    transform: function (srcDir, destDir) {
+    write: function (readTree, destDir) {
         var self = this;
 
         // Call the super which processes all files, then afterwards display any errors
-        return Filter.prototype.transform.apply(this, _.toArray(arguments))
+        return Filter.prototype.write.apply(this, _.toArray(arguments))
             .then(function () {
                 var errorsFound = BroccoliES6ModuleFile.getErrorsFromAnalyzedInfos(self.infos, self.options);
 
@@ -56,10 +58,10 @@ _.extend(ES6ValidateFilter.prototype, {
         return moduleFile.analyzeFile(fullPath)
             .then(function (info) {
                 info.dest = path.join(destDir, relativePath);
-                
+
                 self.infos[info.name] = info;
 
-                fs.linkSync(fullPath, info.dest);
+                helpers.copyPreserveSync(fullPath, info.dest);
 
                 // TODO: Not sure what is appropriate to return for caching here
                 return info.contents.toString();
