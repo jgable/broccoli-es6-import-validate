@@ -1,6 +1,6 @@
 {
   "name": "broccoli-es6-import-validate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Broccoli plugin for validating es6 imports",
   "main": "index.js",
   "scripts": {
